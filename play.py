@@ -7,6 +7,7 @@ import chess.svg
 import traceback
 import base64
 from state import State
+from  monte_carlo_tree_search import MCTS
 
 class Valuator(object):
   def __init__(self):
@@ -17,8 +18,10 @@ class Valuator(object):
     self.model.load_state_dict(vals)
 
   def __call__(self, s):
+    import torch
     brd = s.serialize()[None]
     output = self.model(torch.tensor(brd).float())
+    #print(float(output.data[0][0]))
     return float(output.data[0][0])
 
 # let's write a simple chess value function
@@ -129,18 +132,34 @@ def computer_minimax(s, v, depth, a, b, big=False):
 
 def explore_leaves(s, v):
   ret = []
-  start = time.time()
-  v.reset()
-  bval = v(s)
-  cval, ret = computer_minimax(s, v, 0, a=-MAXVAL, b=MAXVAL, big=True)
-  eta = time.time() - start
-  print("%.2f -> %.2f: explored %d nodes in %.3f seconds %d/sec" % (bval, cval, v.count, eta, int(v.count/eta)))
-  return ret
+  #minimax valuator
+  #start = time.time()
+  #v.reset()
+  #bval = v(s)
+  #cval, ret = computer_minimax(s, v, 0, a=-MAXVAL, b=MAXVAL, big=True)
+  #eta = time.time() - start
+  #print("%.2f -> %.2f: explored %d nodes in %.3f seconds %d/sec" % (bval, cval, v.count, eta, int(v.count/eta)))
+  #-------------------------------------------------------------------
+  # netvaluator
+  isort = []
+  for e in s.board.legal_moves:
+    s.board.push(e)
+    isort.append((v(s), e))
+    s.board.pop()
+  move = sorted(isort, key=lambda x: x[0], reverse=s.board.turn)
+  #print(move)
+  return move
+  #---------------------------------------------------
+  #mcts valuator
+  #ret = v(s)
+  #return ret
 
 # chess board and "engine"
 s = State()
-#v = Valuator()
-v = ClassicValuator()
+#netvaluator = Valuator()
+v= Valuator()
+#v = MCTS()
+#v = ClassicValuator()
 
 def to_svg(s):
   return base64.b64encode(chess.svg.board(board=s.board).encode('utf-8')).decode('utf-8')

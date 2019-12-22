@@ -8,7 +8,7 @@ from torch import optim
 
 class ChessValueDataset(Dataset):
   def __init__(self):
-    dat = np.load("processed/dataset_5M.npz")
+    dat = np.load("processed/dataset_1k.npz")
     self.X = dat['arr_0']
     self.Y = dat['arr_1']
     print("loaded", self.X.shape, self.Y.shape)
@@ -68,6 +68,7 @@ class Net(nn.Module):
 
 if __name__ == "__main__":
   device = "cuda"
+  #device = "cpu"
 
   chess_dataset = ChessValueDataset()
   train_loader = torch.utils.data.DataLoader(chess_dataset, batch_size=256, shuffle=True)
@@ -102,5 +103,5 @@ if __name__ == "__main__":
       num_loss += 1
 
     print("%3d: %f" % (epoch, all_loss/num_loss))
-    torch.save(model.state_dict(), "nets/value.pth")
+    torch.save(model.state_dict(), "nets/value_1k.pth")
 
