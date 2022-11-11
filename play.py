@@ -6,23 +6,79 @@ import time
 import chess.svg
 import traceback
 import base64
+import numpy
 from state import State
 from  monte_carlo_tree_search import MCTS
+# from tensorflow_train import Net
+
+
+import random
+import chess.engine
+
+def random_board(max_depth=200):
+  board = chess.Board()
+  depth = random.randrange(0, max_depth)
+
+  for _ in range(depth):
+    all_moves = list(board.legal_moves)
+    random_move = random.choice(all_moves)
+    board.push(random_move)
+    if board.is_game_over():
+      break
+
+  return board
+
+# this function will create our f(x) (score)
+def stockfish(board, depth):
+  with chess.engine.SimpleEngine.popen_uci('stockfish_14_win_x64/stockfish_14_x64.exe') as sf:
+    result = sf.analyse(board, chess.engine.Limit(depth=depth))
+    score = result['score'].white().score()
+    return score
+
+# net=Net()
+# model = net.build_model(32, 4)
+# model.load_weights('model_1M.h5')
+    
+board=random_board()
+print(board)
+print(stockfish(board, 1))
+print("warum doppelt")
+s= State(board)
+board3d = s.serialize()[None]
+board3d = board3d.astype(numpy.float32)
+# print(model.predict(board3d)[0][0])
+print("sfdfjskfjdklasfjöl")
+
+def hacking_eval(board):
+  # return model.predict(board)[0][0]
+  return stockfish(board,10)
 
 class Valuator(object):
   def __init__(self):
-    import torch
-    from train import Net
-    vals = torch.load("nets/value.pth", map_location=lambda storage, loc: storage)
-    self.model = Net()
-    self.model.load_state_dict(vals)
+    # import torch
+    # from train import Net
+    # vals = torch.load("nets/value.pth", map_location=lambda storage, loc: storage)
+    # self.model = Net()
+    # self.model.load_state_dict(vals)
+    self.hallo="hallo"
+
 
   def __call__(self, s):
-    import torch
-    brd = s.serialize()[None]
-    output = self.model(torch.tensor(brd).float())
-    #print(float(output.data[0][0]))
-    return float(output.data[0][0])
+    # import torch
+    # brd = s.serialize()[None]
+    # output = self.model(torch.tensor(brd).float())
+    # print(float(output.data[0][0]))
+    # return float(output.data[0][0])
+    
+	
+	#print(s.board)
+    # board3d = s.serialize()[None]
+    # board3d = board3d.astype(numpy.float32)
+    # print(self.model.predict(board3d)[0][0])
+    return hacking_eval(s.board)#board3d)
+  
+  # def reset(self):
+    # self.count=0
 
 # let's write a simple chess value function
 # discussing with friends how simple a minimax + value function can beat me
@@ -131,14 +187,16 @@ def computer_minimax(s, v, depth, a, b, big=False):
     return ret
 
 def explore_leaves(s, v):
-  ret = []
-  #minimax valuator
-  #start = time.time()
-  #v.reset()
-  #bval = v(s)
-  #cval, ret = computer_minimax(s, v, 0, a=-MAXVAL, b=MAXVAL, big=True)
-  #eta = time.time() - start
-  #print("%.2f -> %.2f: explored %d nodes in %.3f seconds %d/sec" % (bval, cval, v.count, eta, int(v.count/eta)))
+  # ret = []
+  # #minimax valuator
+  # start = time.time()
+  # v.reset()
+  # bval = v(s)
+  # cval, ret = computer_minimax(s, v, 0, a=-MAXVAL, b=MAXVAL, big=True)
+  # eta = time.time() - start
+  # print("%.2f -> %.2f: explored %d nodes in %.3f seconds %d/sec" % (bval, cval, v.count, eta, int(v.count/eta)))
+  # return ret
+
   #-------------------------------------------------------------------
   # netvaluator
   isort = []
@@ -151,15 +209,15 @@ def explore_leaves(s, v):
   return move
   #---------------------------------------------------
   #mcts valuator
-  #ret = v(s)
-  #return ret
+  # ret = v(s)
+  # return ret
 
 # chess board and "engine"
 s = State()
 #netvaluator = Valuator()
 v= Valuator()
-#v = MCTS()
-#v = ClassicValuator()
+# v = MCTS()
+# v = ClassicValuator()
 
 def to_svg(s):
   return base64.b64encode(chess.svg.board(board=s.board).encode('utf-8')).decode('utf-8')

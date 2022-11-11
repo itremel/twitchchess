@@ -23,6 +23,7 @@ def get_dataset(num_samples=None):
       for i, move in enumerate(game.mainline_moves()):
         #print(mov
         board.push(move)
+        #print(board)
         ser = State(board).serialize()
         X.append(ser)
         Y.append(value)
@@ -35,6 +36,6 @@ def get_dataset(num_samples=None):
   return X,Y
 
 if __name__ == "__main__":
-  X,Y = get_dataset(1000000)
-  np.savez("processed/dataset_1M.npz", X, Y)
+  X,Y = get_dataset(10000000)
+  np.savez("processed/dataset_10M.npz", X, Y)
 

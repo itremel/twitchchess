@@ -22,6 +22,7 @@ class State(object):
         #print(i, pp.symbol())
         bstate[i] = {"P": 1, "N": 2, "B": 3, "R": 4, "Q": 5, "K": 6, \
                      "p": 9, "n":10, "b":11, "r":12, "q":13, "k": 14}[pp.symbol()]
+    #print(bstate)
     if self.board.has_queenside_castling_rights(chess.WHITE):
       assert bstate[0] == 4
       bstate[0] = 7
@@ -39,7 +40,7 @@ class State(object):
       assert bstate[self.board.ep_square] == 0
       bstate[self.board.ep_square] = 8
     bstate = bstate.reshape(8,8)
-
+    #print(bstate)
     # binary state
     state = np.zeros((5,8,8), np.uint8)
 

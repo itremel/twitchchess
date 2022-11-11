@@ -57,3 +57,5 @@ Training Set
 
 The value function was trained on 5M board positions from http://www.kingbase-chess.net/
 
+
+Anaconda mit quantum_env starten
